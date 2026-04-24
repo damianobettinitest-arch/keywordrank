@@ -258,9 +258,9 @@
             <div>
                 <label for="depth">Profondità di Ricerca (Paginazione)</label>
                 <select id="depth">
-                    <option value="2">Primi ~20 risultati (max 2 req API per kw)</option>
-                    <option value="5" selected>Primi ~50 risultati (max 5 req API per kw)</option>
-                    <option value="10">Primi ~100 risultati (max 10 req API per kw)</option>
+                    <option value="2">Max 2 Pagine (~20 risultati, max 2 API req)</option>
+                    <option value="5" selected>Max 5 Pagine (~50 risultati, max 5 API req)</option>
+                    <option value="10">Max 10 Pagine (~100 risultati, max 10 API req)</option>
                 </select>
             </div>
 
@@ -353,6 +353,7 @@
         async function fetchSerp(keyword, deviceType) {
             let foundPosition = -1;
             let foundUrl = "-";
+            let absoluteCounter = 0; // Contatore cumulativo globale per l'intera ricerca
 
             for (let page = 1; page <= maxPages; page++) {
                 status.innerText = `Ricerca: "${keyword}" (${deviceType}) - Analisi pagina ${page}...`;
@@ -381,16 +382,17 @@
                     
                     if (data.organic && data.organic.length > 0) {
                         for (const result of data.organic) {
+                            // Incrementiamo di 1 per ogni singolo risultato organico trovato
+                            absoluteCounter++; 
+
                             if (result.link && result.link.toLowerCase().includes(domain)) {
-                                // FIX: Calcolo corretto della posizione assoluta!
-                                // La pagina 1 inizia da 0, la pagina 2 da 10, la pagina 3 da 20, ecc.
-                                foundPosition = ((page - 1) * 10) + result.position; 
+                                foundPosition = absoluteCounter; // Salviamo la posizione esatta contando 1 ad 1
                                 foundUrl = result.link;
-                                return { position: foundPosition, url: foundUrl }; 
+                                return { position: foundPosition, url: foundUrl }; // Esci dalla funzione: trovato!
                             }
                         }
                     } else {
-                        break; // Nessun risultato organico trovato, interrompi paginazione
+                        break; // Nessun risultato organico trovato (es. fine SERP), interrompi paginazione
                     }
 
                 } catch (error) {
