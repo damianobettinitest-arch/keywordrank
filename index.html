@@ -366,6 +366,7 @@
                 });
 
                 const data = await response.json();
+                console.log(`Risultati per "${keyword}" su ${deviceType}:`, data.organic);
                 
                 let foundPosition = -1;
                 let foundUrl = "-";
