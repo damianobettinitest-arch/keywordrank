@@ -350,7 +350,6 @@
         let totalChecks = deviceChoice === 'both' ? keywords.length * 2 : keywords.length;
         let completedChecks = 0;
 
-        // Nuova funzione helper con Paginazione intelligente
         async function fetchSerp(keyword, deviceType) {
             let foundPosition = -1;
             let foundUrl = "-";
@@ -362,7 +361,7 @@
                     q: keyword,
                     gl: gl || "it",
                     hl: hl || "it",
-                    page: page // Chiede la pagina specifica
+                    page: page
                 };
                 
                 if (location) payload.location = location;
@@ -383,13 +382,15 @@
                     if (data.organic && data.organic.length > 0) {
                         for (const result of data.organic) {
                             if (result.link && result.link.toLowerCase().includes(domain)) {
-                                foundPosition = result.position; // Serper calcola la posizione assoluta automaticamente
+                                // FIX: Calcolo corretto della posizione assoluta!
+                                // La pagina 1 inizia da 0, la pagina 2 da 10, la pagina 3 da 20, ecc.
+                                foundPosition = ((page - 1) * 10) + result.position; 
                                 foundUrl = result.link;
-                                return { position: foundPosition, url: foundUrl }; // Esci dal ciclo: sito trovato!
+                                return { position: foundPosition, url: foundUrl }; 
                             }
                         }
                     } else {
-                        break; // Se non ci sono risultati (es. fine SERP), interrompi il ciclo
+                        break; // Nessun risultato organico trovato, interrompi paginazione
                     }
 
                 } catch (error) {
